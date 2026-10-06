@@ -67,7 +67,7 @@ Choix de conception :
 - PHP ≥ 8.2 avec les extensions `pdo_pgsql` (base Supabase) et `pdo_sqlite` (tests)
 - Composer 2
 - Node.js ≥ 20 et npm
-- Une base PostgreSQL (projet Supabase gratuit)
+- Une base PostgreSQL (projet Supabase gratuit), **ou** SQLite pour une évaluation locale (voir [Démarrage rapide sans Supabase](#démarrage-rapide-sans-supabase))
 
 > Sous XAMPP/Windows, activer `extension=pdo_pgsql` et `extension=pgsql` dans `php.ini` (lignes commentées par défaut).
 
@@ -123,6 +123,57 @@ Les valeurs se trouvent dans Supabase : *Project Settings → Database → Conne
 | `VITE_API_URL` | URL de l'API, préfixe `/api` inclus | `http://localhost:8000/api` |
 
 Aucun secret n'est versionné : les fichiers `.env` sont ignorés par Git.
+
+## Démarrage rapide sans Supabase
+
+- La démonstration principale utilise **PostgreSQL (Supabase)**.
+- **SQLite est proposé uniquement comme solution de démarrage rapide** pour évaluer l'application en local sans identifiants Supabase. Le code, la migration et les règles métier sont identiques, seul le pilote de base change.
+- Les tests automatisés utilisent déjà SQLite en mémoire (`phpunit.xml`) et ne nécessitent aucune de ces étapes.
+
+Prérequis : l'extension PHP `pdo_sqlite` (activée par défaut avec XAMPP).
+
+**1.** Préparer le backend (si ce n'est pas déjà fait) :
+
+```bash
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+```
+
+**2.** Dans `backend/.env`, remplacer `DB_CONNECTION=pgsql` par `DB_CONNECTION=sqlite` et **commenter les autres lignes `DB_*`** :
+
+```dotenv
+DB_CONNECTION=sqlite
+# DB_HOST=...
+# DB_PORT=...
+# DB_DATABASE=...
+# DB_USERNAME=...
+# DB_PASSWORD=...
+# DB_SSLMODE=...
+```
+
+Sans `DB_DATABASE`, Laravel utilise automatiquement le fichier `backend/database/database.sqlite`. La ligne `DB_DATABASE=postgres` doit impérativement être commentée, sinon Laravel chercherait un fichier nommé `postgres`. Pour utiliser un autre emplacement, indiquer un chemin **absolu** : `DB_DATABASE=C:/chemin/vers/database.sqlite`.
+
+**3.** Créer le fichier de base s'il n'existe pas (il est ignoré par Git) :
+
+```bash
+touch database/database.sqlite
+```
+
+Sous PowerShell : `New-Item database\database.sqlite -ItemType File`
+
+**4.** Appliquer la migration et lancer l'API :
+
+```bash
+php artisan config:clear
+php artisan migrate
+php artisan serve
+```
+
+L'API répond sur `http://localhost:8000/api`. Le frontend se lance ensuite normalement (voir [Lancement frontend](#lancement-frontend)), sans autre configuration.
+
+Pour revenir à Supabase : remettre `DB_CONNECTION=pgsql`, décommenter et renseigner les variables `DB_*`, puis exécuter `php artisan config:clear` et `php artisan migrate`.
 
 ## Base de données
 
