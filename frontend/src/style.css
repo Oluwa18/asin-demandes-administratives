@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #ecf3ff;
+  --color-brand-100: #dde9ff;
+  --color-brand-500: #465fff;
+  --color-brand-600: #3641f5;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  @apply bg-gray-50 text-gray-800 antialiased;
+}
