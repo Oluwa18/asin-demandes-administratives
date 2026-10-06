@@ -1,0 +1,92 @@
+@baseUrl = http://localhost:8000/api
+@npi = 1234567890
+# Copier ici l'id renvoyé par la création
+@id = REMPLACER_PAR_UN_ID
+
+### 1. Créer une demande (201, statut DEPOSEE)
+POST {{baseUrl}}/demandes
+Content-Type: application/json
+Accept: application/json
+
+{ "npi": "{{npi}}", "type_acte": "ACTE_NAISSANCE", "nombre_copies": 2 }
+
+### 2. Lister les demandes de l'usager (plus récente d'abord)
+GET {{baseUrl}}/usagers/{{npi}}/demandes
+Accept: application/json
+
+### 3. Filtrer par statut + pagination
+GET {{baseUrl}}/usagers/{{npi}}/demandes?statut=EN_COURS&page=1&limit=20
+Accept: application/json
+
+### 4. DEPOSEE -> EN_COURS
+PATCH {{baseUrl}}/demandes/{{id}}/statut
+Content-Type: application/json
+Accept: application/json
+
+{ "statut": "EN_COURS" }
+
+### 5. EN_COURS -> VALIDEE
+PATCH {{baseUrl}}/demandes/{{id}}/statut
+Content-Type: application/json
+Accept: application/json
+
+{ "statut": "VALIDEE" }
+
+### 6. EN_COURS -> REJETEE (motif obligatoire)
+PATCH {{baseUrl}}/demandes/{{id}}/statut
+Content-Type: application/json
+Accept: application/json
+
+{ "statut": "REJETEE", "motif_rejet": "Pièce justificative invalide" }
+
+### 7. Statistiques par statut
+GET {{baseUrl}}/statistiques/statuts
+Accept: application/json
+
+### --- Erreurs attendues ---
+
+### E1. NPI invalide (400)
+POST {{baseUrl}}/demandes
+Content-Type: application/json
+Accept: application/json
+
+{ "npi": "12ab", "type_acte": "ACTE_NAISSANCE", "nombre_copies": 2 }
+
+### E2. Type d'acte invalide (400)
+POST {{baseUrl}}/demandes
+Content-Type: application/json
+Accept: application/json
+
+{ "npi": "{{npi}}", "type_acte": "PASSEPORT", "nombre_copies": 2 }
+
+### E3. Nombre de copies invalide (400)
+POST {{baseUrl}}/demandes
+Content-Type: application/json
+Accept: application/json
+
+{ "npi": "{{npi}}", "type_acte": "ACTE_NAISSANCE", "nombre_copies": 6 }
+
+### E4. Rejet sans motif (400)
+PATCH {{baseUrl}}/demandes/{{id}}/statut
+Content-Type: application/json
+Accept: application/json
+
+{ "statut": "REJETEE" }
+
+### E5. Transition interdite, ex. après VALIDEE (409)
+PATCH {{baseUrl}}/demandes/{{id}}/statut
+Content-Type: application/json
+Accept: application/json
+
+{ "statut": "EN_COURS" }
+
+### E6. Limite > 20 (400)
+GET {{baseUrl}}/usagers/{{npi}}/demandes?limit=50
+Accept: application/json
+
+### E7. Demande inexistante (404)
+PATCH {{baseUrl}}/demandes/9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d/statut
+Content-Type: application/json
+Accept: application/json
+
+{ "statut": "EN_COURS" }
