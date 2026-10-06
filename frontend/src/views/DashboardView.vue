@@ -8,6 +8,13 @@ const stats = ref(null)
 const loading = ref(true)
 const error = ref('')
 
+const cardLabels = {
+  DEPOSEE: 'Déposées',
+  EN_COURS: 'En cours',
+  VALIDEE: 'Validées',
+  REJETEE: 'Rejetées',
+}
+
 const colors = {
   DEPOSEE: 'bg-gray-100 text-gray-700',
   EN_COURS: 'bg-amber-50 text-amber-600',
@@ -31,9 +38,9 @@ onMounted(async () => {
     <AlertMessage :message="error" />
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <div v-for="(label, key) in STATUTS" :key="key" class="rounded-2xl border border-gray-200 bg-white p-5">
+      <div v-for="key in Object.keys(STATUTS)" :key="key" class="rounded-2xl border border-gray-200 bg-white p-5">
         <span class="inline-flex rounded-lg px-2.5 py-1 text-xs font-medium" :class="colors[key]">{{ key }}</span>
-        <p class="mt-4 text-sm text-gray-500">{{ label }}s</p>
+        <p class="mt-4 text-sm text-gray-500">{{ cardLabels[key] }}</p>
         <p class="mt-1 text-3xl font-bold text-gray-900">
           <span v-if="loading" class="text-gray-300">…</span>
           <span v-else>{{ stats?.[key] ?? '–' }}</span>
